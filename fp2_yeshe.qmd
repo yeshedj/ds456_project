@@ -4,7 +4,7 @@ author: "Yeshe J"
 format: html
 ---
 
-```{r load-data, include=FALSE}
+```{r load-data, message=FALSE}
 # load in packages and files
 library(readxl)
 library(tidyverse)
@@ -19,7 +19,7 @@ eng_results <- read_excel("english-results-data.xlsx", sheet = "Time 1")
 ```
 
 
-```{r setup, include=FALSE}
+```{r setup, warning=FALSE}
 # clean demo data
 demo_clean <- demo_data %>%
   rename(
@@ -47,7 +47,7 @@ demo_results_merged <- demo_clean %>%
 
 
 ### Visuals
-```{r visualization, echo=FALSE}
+```{r visualization}
 #| fig-cap: "Distribution of overall severity of Western Aphasia Battery (WAB) Aphasia Quotient (AQ) scores across clinical subtypes of aphasia"
 #| fig-alt: "A boxplot with data points that show the WAB AQ severity scores across 10 aphsaia subtypes for 83 participants that are ordered from most to least severe."
 
