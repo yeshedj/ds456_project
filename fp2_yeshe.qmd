@@ -46,7 +46,7 @@ demo_results_merged <- demo_clean %>%
 ```
 
 
-### visuals
+### Visuals
 ```{r visualization, echo=FALSE}
 #| fig-cap: "Distribution of overall severity of Western Aphasia Battery (WAB) Aphasia Quotient (AQ) scores across clinical subtypes of aphasia"
 #| fig-alt: "A boxplot with data points that show the WAB AQ severity scores across 10 aphsaia subtypes for 83 participants that are ordered from most to least severe."
