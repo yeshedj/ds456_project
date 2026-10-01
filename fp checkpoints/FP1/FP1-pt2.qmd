@@ -1,0 +1,89 @@
+---
+title: "FP1-pt2"
+author: Yeshe Jangchup
+format: html
+---
+
+Project area: Psych/cognition
+
+Teammate: Karyna Steele
+
+1.  Copy the research questions from part three during the in class exercise to your file.
+
+    -   Can personalized language modeling improve communication between people with speech aphasia and speech-based AI assistants?
+    -   How similar are neural network classification errors to human classification errors? Does nn confidence reflect (before/after calibration) predict human difficulty with tasks?
+    -   Can a model analyze the brain’s processing of emotion to detect network differences in Major Depressive Disorder (or others)?
+
+2.  Load at least two datasets. Coordinate your work with your teammates to make sure you work on separate datasets. If there are datasets you tried to load that didn't work or seem interesting, name the dataset and describe the experience. Ask your teammate if they have ideas to get it working.
+
+    -   https://talkbank.org/aphasia/
+
+    -   https://osf.io/dm73j
+
+------------------------------------------------------------------------
+
+3.  For each dataset
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(viridis)
+
+demo_data <- read_excel("demo-data.xlsx", sheet = "Time 1")
+
+eng_results <- read_excel("english-results-data.xlsx", sheet = "Time 1")
+```
+
+-   Data source (who created it?)
+
+    -   AphasiaBank/TalkBank was made by researchers at Carnegie Mellon University in collaboration with contributing clinical researchers from various different speech-language pathology research labs across institutions.
+
+-   Data description - who's in it and what’s being measured?
+
+    -   The data contains demographic and clinical history of participants with aphasia caused by stroke. The variables measure age, gender, lesion side (left vs right hemisphere), lesion location, lesion etiology, stroke occurance, and diagnostic aphasia classification by a Boston clinician.
+
+-   Data limitations (eg, are the data recent? do they contain all the variables you might want? Are there more data you will need to calculate or collect?)
+
+    -   One limitation would be that the dataset is recorded from a single assessment time rather than tracking longitudinal trajectories with follow-up visits. Another limitation would be some of the participants who have unclassified (NCL) or missing (U/NA) details which reduces the amount of clean and complete data.
+
+-   Show the variable names. Describe the most useful / interesting ones.
+
+    -   `Participant ID` - the unique alphabetical/numberic identifier of the participants
+
+    <!-- -->
+
+    -   `Aphasia Type` - the clinical classification of Aphasia subtype (e.g, Broca's, Wernicke's, Global).
+
+    -   `Lesion Side` - the hemispheric side/location affected by stroke (left, right, or both sides).
+
+    -   `Lesion Location` - description of the affected brain location
+
+```{r}
+colnames(demo_data)
+```
+
+-   Visualize one interesting variable.
+
+```{r, warning=FALSE}
+demo_data$`Age at Testing` <- as.numeric(demo_data$`Age at Testing`)
+
+ggplot(demo_data, aes(x = `Age at Testing`, fill = Gender)) + 
+  geom_histogram(binwidth = 5, color = "white", position = "dodge") +
+  theme_minimal() +
+  scale_fill_viridis(discrete=TRUE,option="viridis") +
+  labs(
+    title = "Distribution of Participant Ages by Gender",
+    x = "Age at Testing (Years)",
+    y = "# of Participants"
+  )
+```
+
+4.  Indicate some variable or variables that can connect at least two of the datasets in a join. You do not need to actually do the join, just figure out which variables would be helpful.
+
+    -   To join the `demo-data.xlsx` and `english-results-data.xlsx` datasets, the main link between them would be the **`Participant ID`** variable.
+
+    -    This would allow each participant to link their demographic and clinical profiles to their performance on the conducted assessments (e.g., `WAB`, `AQ`, `Fluency`, `Naming`, etc., scores).
+
+5.  Remember to include a clear AI statement.
+
+Submit your rendered/Knit HTML to Moodle. Be ready to present your findings in class.

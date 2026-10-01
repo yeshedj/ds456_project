@@ -1,0 +1,191 @@
+---
+title: "data_exploration"
+format: html
+---
+
+
+```{r setup, include=FALSE}
+# load in packages and files
+library(readxl)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+# load in datasets
+demo_data <- read_excel("demo-data.xlsx", sheet = "Time 1")
+eng_results <- read_excel("english-results-data.xlsx", sheet = "Time 1")
+
+# 1. Clean column names and select core WAB assessment metrics
+eng_clean <- eng_results %>%
+  rename(
+    wab_aq         = `WAB         AQ\r\nNote: for Baycrest and NEURAL corpora, WAB scores are from Bedside WAB`,
+    wab_type       = `WAB Type`,
+    fluency_score  = `WAB SpontSp Fluency`,
+    comp_score     = `AudVbl Comp Score for AQ`,
+    rep_score      = `Rep Score for AQ`,
+    naming_score   = `Naming Score for AQ`
+  ) %>%
+  # Ensure numeric type
+  mutate(wab_aq = as.numeric(wab_aq)) %>%
+  filter(!is.na(wab_aq))
+
+# 2. Merge with cleaned demographics data
+demo_results_merged <- demo_clean %>%
+  inner_join(eng_clean, by = "Participant ID")
+
+
+
+# VIZ 3: Overall Aphasia Severity (WAB AQ) by Boston Aphasia Subtype
+
+ggplot(demo_results_merged, aes(x = reorder(aphasia_type, wab_aq, FUN = median, na.rm = TRUE), 
+                                 y = wab_aq, 
+                                 fill = aphasia_type)) +
+  geom_boxplot(alpha = 0.6, outlier.shape = NA) +
+  geom_jitter(width = 0.15, alpha = 0.7, size = 2) +
+  theme_minimal(base_size = 12) +
+  scale_fill_brewer(palette = "Set3") +
+  labs(
+    title = "Western Aphasia Battery (WAB AQ) Severity by Aphasia Subtype",
+    subtitle = paste0("N = ", nrow(demo_results_merged), " participants; lower scores indicate higher severity"),
+    x = "Aphasia Type (Boston Classification)",
+    y = "WAB Aphasia Quotient (AQ)",
+    fill = "Aphasia Type"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+# VIZ 4: Domain Performance Profile across Subtypes
+
+demo_results_long <- demo_results_merged %>%
+  mutate(aphasia_type = fct_reorder(aphasia_type, wab_aq, .fun = median, na.rm = TRUE)) %>%
+  select(aphasia_type, fluency_score, comp_score, naming_score) %>%
+  pivot_longer(
+    cols = c(fluency_score, comp_score, naming_score),
+    names_to = "Domain",
+    values_to = "Score"
+  ) %>%
+  mutate(
+    Domain = case_when(
+      Domain == "fluency_score" ~ "Fluency",
+      Domain == "comp_score" ~ "Auditory Comprehension",
+      Domain == "naming_score" ~ "Naming",
+      TRUE ~ Domain
+    ),
+    Score = as.numeric(Score)
+  ) %>%
+  filter(!is.na(Score))
+
+ggplot(demo_results_long, aes(x = aphasia_type, y = Score, fill = Domain)) +
+  geom_boxplot(alpha = 0.7) +
+  facet_wrap(~ Domain, scales = "free_y") +
+  theme_minimal(base_size = 11) +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(
+    title = "WAB Domain Scores across Clinical Aphasia Subtypes",
+    x = NULL,
+    y = "Subtest Score"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+```{r}
+
+demo_data %>% 
+  count(Gender)
+
+```
+
+
+```{r}
+# VIZ 1: age distribution by gender
+library(readxl)
+library(ggplot2)
+
+# force `Age` column to be numeric
+demo_data$`Age at Testing` <- as.numeric(demo_data$`Age at Testing`)
+
+ggplot(demo_data, aes(x = `Age at Testing`, fill = Gender)) + 
+  geom_histogram(binwidth = 2, color = "white", position = "dodge") +
+  labs(
+    title = "Age Distribution by Gender",
+    x = "Age at Testing",
+    y = "Count of Participants"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+```{r}
+
+
+# any significant comorbidities -->> Apraxia of Speech, Dysarthria, Depression
+# years of SLP (speech language pathology) treatment -->> Years SLP Tx
+# how recent the strokes were -->> Date of Most Recent Stroke, Hx Previous Stroke, Date of Previous Stroke
+# lesioning -->> Lesion Side, Lesion Etiology, Lesion Location, Lesion Location Basis, Lesion Description
+
+
+
+demo_clean <- demo_data %>%
+  rename(
+    aphasia_type   = `Aphasia Type --Clin Impression -- Boston`,
+    aphasia_cat    = `Aphasia Category -- Clin Impression`,
+    lesion_side    = `Lesion Side`,
+    lesion_loc_raw = `Lesion Location`
+  ) %>%
+  # Filter out missing/uninformative values upfront
+  filter(!is.na(lesion_loc_raw), 
+         !lesion_loc_raw %in% c("U", "NA", "unavailable", "not applicable", "")) %>%
+  filter(!is.na(aphasia_type), 
+         !aphasia_type %in% c("U", "NA", "unavailable", "not applicable", "non-classifiable")) %>%
+  
+  # Expanded anatomical RegEx parser
+  mutate(
+    lesion_loc_clean = case_when(
+      str_detect(tolower(lesion_loc_raw), "front|fomtal|frnt") ~ "Frontal",
+      str_detect(tolower(lesion_loc_raw), "temp|tmpr") ~ "Temporal",
+      str_detect(tolower(lesion_loc_raw), "pariet|prtl") ~ "Parietal",
+      str_detect(tolower(lesion_loc_raw), "occip") ~ "Occipital",
+      str_detect(tolower(lesion_loc_raw), "subcort|basal|thalam|capsul|bg|ic") ~ "Subcortical",
+      str_detect(tolower(lesion_loc_raw), "mca") ~ "MCA Territory (Unspecified)",
+      TRUE ~ "Other / Missing Detail"
+    )
+  )
+
+```
+
+
+
+```{r}
+# Clean and filtered dataset for Left Hemisphere strokes
+demo_L_hemisphere <- demo_clean %>%
+  filter(lesion_side %in% c("L", "left"))
+
+ggplot(demo_L_hemisphere, aes(x = aphasia_type, fill = lesion_loc_clean)) +
+  geom_bar(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_minimal(base_size = 12) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Lesion Location by Aphasia Type (Left Hemisphere Strokes)",
+    subtitle = paste0("N = ", nrow(demo_L_hemisphere), " participants with available lesion details"),
+    x = "Aphasia Type (Boston Classification)",
+    y = "Number of Participants",
+    fill = "Lesion Site"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+

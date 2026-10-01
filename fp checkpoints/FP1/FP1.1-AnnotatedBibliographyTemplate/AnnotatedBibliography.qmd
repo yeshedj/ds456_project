@@ -1,0 +1,25 @@
+---
+title: "Annotated Bibliography: LLMs and Aphasia"
+author: "Yeshe"
+format: 
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+bibliography: references.bib
+csl: apa-annotated-bibliography.csl
+nocite: |
+  @*
+---
+
+## Overall Summary
+
+Aphasia is a speech language disorder characterized by impaired comprehension, reading, writing, and communication, often due to injuries or damage to the brain's language center. 
+
+Computational models and methods are increasingly being used to help understand how language is broken down and to support those with this disorder. One area of research studies compared the dynamics of large language models (LLMs) to the brain activity seen in aphasia [@watanabe2025]. They have been used to detect and subtype different presentations of aphasia [@cong2024; @cong2026], as well as been tested as assistive tools to support fragmented aphasic speech [@adikari2025; @manir2024] and writing [@allen2025]. Another area of research studied the application of machine learning to clinical and neuroimaging data to test whether its able to classify types of aphasia, as well as its ability to predict severity levels or recovery length. Clustering together behavioral profiles driven by actual data can perform better than traditional methods of lesion-based classification [@landrigan2021]. There has also been early pilot work that predicted responsiveness to therapy [@gu2020] and models that combined multiple imaging modalities showed a higher accuracy of predicting language outcomes than any individual modality [@hu2025; @kristinsson2021]. 
+
+All in all these studies suggest that LLMs and machine learning models are a promising tool that can be used for aphasia assessment and support with impactful clinical implications, however many rely on small sample sizes, so larger studies and more work in this field of research is needed.
+
+## Bibliography
+
+::: {#refs}
